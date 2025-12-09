@@ -38,9 +38,14 @@ class Expenses {
 
 struct ContentView: View {
     @State private var expenses = Expenses()
-    
     @State private var showingAddExpense = false
+
+    @Environment(\.locale) var locale
     
+    var currencyCode: String {
+        locale.currency?.identifier ?? "USD"
+    }
+
     var body: some View {
         NavigationStack {
             List {
@@ -55,7 +60,10 @@ struct ContentView: View {
                         
                         Spacer()
                         
-                        Text(item.amount, format: .currency(code: "USD"))
+                        Text(item.amount, format: .currency(code: currencyCode))
+                            .foregroundStyle(style(for: item.amount))
+                            .font(style(for: item.amount) == .red ? .headline : .body)
+                            .bold(style(for: item.amount) == .green || style(for: item.amount) == .red)
                     }
                 }
                 .onDelete(perform: removeItems)
@@ -72,9 +80,19 @@ struct ContentView: View {
         }
     }
     
-    func removeItems(at offsets: IndexSet) {
-            expenses.items.remove(atOffsets: offsets)
+    func style(for amount: Double) -> Color {
+        if amount < 10 {
+            return .green
+        } else if amount < 100 {
+            return .orange
+        } else {
+            return .red
         }
+    }
+
+    func removeItems(at offsets: IndexSet) {
+        expenses.items.remove(atOffsets: offsets)
+    }
 }
 
 #Preview {
